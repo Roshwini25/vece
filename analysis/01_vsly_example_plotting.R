@@ -1,7 +1,7 @@
 # Example script to show how to plot and save tables
 
 # THis loads our package, so that any functions we have in the R directory
-# are available to us
+# are available to us. If we change the function, we need to rerun this (ctrl + shift + l)
 devtools::load_all()
 library(ggplot2)
 
@@ -9,6 +9,7 @@ library(ggplot2)
 
 # Start by reading in our data
 vsly <- vsl_fn("GBR", vsl_path = "analysis/data-derived/vsly.rds")
+head(vsly)
 
 # start by let's making  a plot of life expectancy of UK age groups
 le_plot <- vsly %>%

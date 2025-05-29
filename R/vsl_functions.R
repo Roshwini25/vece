@@ -9,12 +9,14 @@ vsl_fn <- function(iso3c = "GBR", vsl_path = "analysis/data-derived/vsly.rds") {
 
   # Filter for UK only (iso3c == "GBR")
   vsl_uk_value <- vsly_df[vsly_df$iso3c == iso3c, "vsl"]
+  vsly_uk_value <- vsly_df[vsly_df$iso3c == iso3c, "vsly"]
   le_uk_value <- vsly_df[vsly_df$iso3c == iso3c, "lg"]
   age_groups <- vsly_df[vsly_df$iso3c == iso3c, "age_group"]
 
   df <- data.frame("age_group" = age_groups,
                    "le" = le_uk_value,
                    "vsl" = vsl_uk_value,
+                   "vsly" = vsly_uk_value,
                    "iso3c" = iso3c)
 
   return(df)
