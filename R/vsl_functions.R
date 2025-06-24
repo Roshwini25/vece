@@ -2,8 +2,8 @@
 vsl_fn <- function(iso3c = "GBR", vsl_path = "analysis/data-derived/vsly.rds") {
   uk_pop_df <- squire::get_population(iso3c = "GBR")   # Get UK population by age group
   squire_params <- squire::parameters_explicit_SEEIR(country = "United Kingdom")  # Get parameters like IFR and hospitalisation rates
-  uk_pop_df$ifr <- squire_params$ifr  #  Add IFR and hospitalisation rate
-  uk_pop_df$prob_hosp <- squire_params$prob_hosp  #  Add IFR and hospitalisation rate
+  uk_pop_df$ifr <- squire_params$ifr  #  Add IFR
+  uk_pop_df$prob_hosp <- squire_params$prob_hosp  #  Add hospitalisation rate
 
   vsly_df <- readRDS(vsl_path)
 
