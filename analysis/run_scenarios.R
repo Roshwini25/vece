@@ -8,7 +8,7 @@ library(purrr)
 source("R/create_UK_data.R")            # Static population and risk inputs
 source("R/calculate_disease_burden.R")  # Scenario-specific infections & outcomes
 source("R/loss_strategy.R")              # Productivity and mortality losses
-source("R/cost_strategy.R")              # Vaccine and hospitalisation costs
+source("R/cost_strategy.R")              # Vaccine costs
 
 # --- Step 1: Create base UK population data ---
 uk_base <- create_UK_data()
@@ -27,6 +27,7 @@ params <- list(
   los = 7,
   cost_per_day = 933,
   hosp_days_lost = 7,
+  post_hosp_days = 7,
   symptomatic_days_lost = 1.5,
   long_covid_prob = 0.133,
   long_covid_days = 28,
