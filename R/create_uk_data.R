@@ -13,6 +13,22 @@ create_UK_data <- function(iso3c = "GBR", country_name = "United Kingdom") {
     group_by(age_group) %>%
     summarise(n = sum(n), .groups = "drop")
 
+  # --- Create new lookup table for IFR, IHR, and wage ---
+  risk_wage_lookup <- tibble(
+    age_group = c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39",
+                  "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80+"),
+
+    ifr = c(0.000000153, 0.000000153, 0.000000153, 0.00000633, 0.00000633, 0.00000633, 0.00000633,
+            0.0000155, 0.0000155, 0.0000738, 0.0000738, 0.000236, 0.000236, 0.00107, 0.00107,
+            0.00725, 0.00725),
+
+    ihr = c(0.000226, 0.000226, 0.000226, 0.000317, 0.000317, 0.000317, 0.000317,
+            0.0004, 0.0004, 0.000763, 0.000763, 0.00208, 0.00208, 0.00686, 0.00686,
+            0.0328, 0.0328),
+
+    daily_wage = c(0, 0, 0, 18, 44, 88, 88, 110, 118, 118, 112, 112, 87, 87, 87, 87, 87)
+  )
+
   # --- Load and filter inputs ---
   vsly_df <- readRDS("analysis/data-derived/vsly.rds") %>% ungroup()
   life_expectancy <- read_csv("analysis/tables/life_expectancy.csv", show_col_types = FALSE)
@@ -42,26 +58,17 @@ create_UK_data <- function(iso3c = "GBR", country_name = "United Kingdom") {
   vsly_country <- harmonise_age_groups(vsly_country)
   life_expectancy_country <- harmonise_age_groups(life_expectancy_country)
 
-  # --- Manual IFR vector (17 age groups) ---
-  # Infection Fatality Ratio (IFR) values adapted from Verity et al. (2020)
-  # Source: Verity R et al. (2020), Lancet Infect Dis, doi:10.1016/S1473-3099(20)30243-7
-  # Used in the Squire model: squire::parameters_explicit_SEEIR("GBR")$ifr
-  ifr_vector <- c(0, 0.01, 0.01, 0.02, 0.03, 0.04, 0.06, 0.10,
-                  0.16, 0.24, 0.38, 0.60, 0.94, 1.47, 2.31, 3.61, 8.82) / 100
-
   # --- Merge into final df ---
   df <- uk_pop_df %>%
     left_join(vsly_country %>% select(age_group, vsly), by = "age_group") %>%
     left_join(life_expectancy_country %>% select(age_group, life_years_remaining), by = "age_group") %>%
+    left_join(risk_wage_lookup, by = "age_group") %>%
     mutate(
       life_years_remaining = case_when(
         age_group == "5-9" ~ 78,
         age_group == "10-14" ~ 73,
         TRUE ~ life_years_remaining
-      ),
-      prob_hosp = squire_params$prob_hosp[1:17],
-      ifr = ifr_vector
+      )
     )
-
   return(df)
 }
