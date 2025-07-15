@@ -32,41 +32,30 @@ params <- list(
   cost_vaccine_total = 25
 )
 
-# --- Step 4: Run scenario loop ---
-scenario_results <- pmap_dfr(
+# --- Step 4: JCVI Spring 2025 Policy (75+ only, excluding care home and immunosuppressed) ---
+scenario_results_jcvi <- pmap_dfr(
   scenario_grid,
   function(vaccine_uptake, infection_rate, efficacy_symptomatic) {
 
-    # Calculate burden (age-stratified)
+    uk_pop <- uk_base %>%
+      filter(age_group %in% c("75-79", "80+"))  # JCVI proxy: 75+ only
+
     df_burden <- calculate_disease_burden(
-      df = uk_base,
+      df = uk_pop,
       infection_rate = infection_rate,
       vaccine_uptake = vaccine_uptake,
       efficacy_symptomatic = efficacy_symptomatic
     )
 
-    # Calculate losses
     loss <- calculate_losses(df_burden, params)
+    vax_cost <- calculate_vaccine_cost(df_burden$n, vaccine_uptake, params$cost_vaccine_total)
+    hospital_burden <- calculate_hospital_burden(df_burden$hospitalisations, params$los, params$cost_per_day)
 
-    # Vaccine cost
-    vax_cost <- calculate_vaccine_cost(
-      population = df_burden$n,
-      uptake = vaccine_uptake,
-      cost_vaccine_total = params$cost_vaccine_total
-    )
-
-    # Medical hospital burden (also included in total_loss, shown separately here)
-    hospital_burden <- calculate_hospital_burden(
-      hospitalisations = df_burden$hospitalisations,
-      los = params$los,
-      cost_per_day = params$cost_per_day
-    )
-
-    # Output result
     tibble(
-      vaccine_uptake = vaccine_uptake,
-      infection_rate = infection_rate,
-      efficacy_symptomatic = efficacy_symptomatic,
+      policy_name = "JCVI Spring 2025 (75+ only)",
+      vaccine_uptake,
+      infection_rate,
+      efficacy_symptomatic,
       hospital_cost = hospital_burden,
       vaccine_cost = vax_cost,
       symptomatic_loss = loss$symptomatic_loss,
@@ -79,9 +68,85 @@ scenario_results <- pmap_dfr(
   }
 )
 
-# --- Step 5: Save results ---
-write_csv(scenario_results, "analysis/tables/scenario_results.csv")
-saveRDS(scenario_results, "analysis/data-derived/scenario_results.rds")
+# --- Step 5: Universal Policy (All Ages) ---
+scenario_results_universal <- pmap_dfr(
+  scenario_grid,
+  function(vaccine_uptake, infection_rate, efficacy_symptomatic) {
 
-# --- Optional: QA Print ---
-print(scenario_results)
+    df_burden <- calculate_disease_burden(
+      df = uk_base,  # no filter, all age groups
+      infection_rate = infection_rate,
+      vaccine_uptake = vaccine_uptake,
+      efficacy_symptomatic = efficacy_symptomatic
+    )
+
+    loss <- calculate_losses(df_burden, params)
+    vax_cost <- calculate_vaccine_cost(df_burden$n, vaccine_uptake, params$cost_vaccine_total)
+    hospital_burden <- calculate_hospital_burden(df_burden$hospitalisations, params$los, params$cost_per_day)
+
+    tibble(
+      policy_name = "Universal (All Ages)",
+      vaccine_uptake,
+      infection_rate,
+      efficacy_symptomatic,
+      hospital_cost = hospital_burden,
+      vaccine_cost = vax_cost,
+      symptomatic_loss = loss$symptomatic_loss,
+      long_covid_loss = loss$long_covid_loss,
+      mortality_loss = loss$mortality_loss,
+      informal_care_loss = loss$informal_care_loss,
+      hosp_prod_loss = loss$hosp_prod_loss,
+      total_productivity_loss = loss$total_loss
+    )
+  }
+)
+
+# --- Step 6: All Adults Policy (18+) ---
+scenario_results_adults <- pmap_dfr(
+  scenario_grid,
+  function(vaccine_uptake, infection_rate, efficacy_symptomatic) {
+
+    uk_pop <- uk_base %>%
+      filter(age_group %in% c("18-29", "30-39", "40-49", "50-59", "60-64", "65-74", "75-79", "80+"))
+
+    df_burden <- calculate_disease_burden(
+      df = uk_pop,
+      infection_rate = infection_rate,
+      vaccine_uptake = vaccine_uptake,
+      efficacy_symptomatic = efficacy_symptomatic
+    )
+
+    loss <- calculate_losses(df_burden, params)
+    vax_cost <- calculate_vaccine_cost(df_burden$n, vaccine_uptake, params$cost_vaccine_total)
+    hospital_burden <- calculate_hospital_burden(df_burden$hospitalisations, params$los, params$cost_per_day)
+
+    tibble(
+      policy_name = "All Adults (18+)",
+      vaccine_uptake,
+      infection_rate,
+      efficacy_symptomatic,
+      hospital_cost = hospital_burden,
+      vaccine_cost = vax_cost,
+      symptomatic_loss = loss$symptomatic_loss,
+      long_covid_loss = loss$long_covid_loss,
+      mortality_loss = loss$mortality_loss,
+      informal_care_loss = loss$informal_care_loss,
+      hosp_prod_loss = loss$hosp_prod_loss,
+      total_productivity_loss = loss$total_loss
+    )
+  }
+)
+
+# --- Step 7: Combine All Policies ---
+scenario_results_all <- bind_rows(
+  scenario_results_jcvi,
+  scenario_results_universal,
+  scenario_results_adults
+)
+
+# --- Step 8: Save Combined Results ---
+write_csv(scenario_results_all, "analysis/tables/scenario_results_policies.csv")
+saveRDS(scenario_results_all, "analysis/data-derived/scenario_results_policies.rds")
+
+# --- Optional: QA Preview ---
+print(scenario_results_all)

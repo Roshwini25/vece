@@ -42,30 +42,18 @@ ggplot(scenario_results, aes(x = vaccine_uptake, y = total_productivity_loss, co
 ggsave("analysis/tables/lineplot_prod_loss_vs_uptake.png", width = 8, height = 5)
 
 # --- Step 3: Plot Vaccine Cost vs Productivity Loss ---
-ggplot(scenario_results, aes(x = factor(vaccine_uptake), y = symptomatic_loss, fill = factor(infection_rate))) +
-  geom_col(position = "dodge") +
-  labs(
-    title = "Symptomatic Productivity Loss by Vaccine Uptake and Infection Rate",
-    x = "Vaccine Uptake",
-    y = "Symptomatic Productivity Loss (£)",
-    fill = "Infection Rate"
-  ) +
-  scale_y_continuous(labels = scales::label_number(scale = 1e-9, suffix = "B", prefix = "£")) +
-  theme_minimal()
-
-ggsave("analysis/tables/plot_symptomatic_loss_by_scenario.png", width = 8, height = 5)
-
-# --- Step 4: Plot Vaccine Cost vs. Symptomatic Productivity Loss ---
 ggplot(scenario_results, aes(x = vaccine_cost, y = symptomatic_loss, color = factor(infection_rate))) +
   geom_point(size = 3) +
   labs(
     title = "Vaccine Programme Cost vs. Symptomatic Productivity Loss",
     x = "Vaccine Cost (£)",
-    y = "Symptomatic Loss (£)",
+    y = "Symptomatic Productivity Loss (£)",
     color = "Infection Rate"
   ) +
   scale_x_continuous(labels = label_number(scale = 1e-9, prefix = "£", suffix = "B")) +
   scale_y_continuous(labels = label_number(scale = 1e-9, prefix = "£", suffix = "B")) +
   theme_minimal()
 
-ggsave("analysis/tables/plot_vax_cost_vs_sympt_loss.png", width = 8, height = 5)
+ggsave("analysis/tables/plot_vaccine_cost_vs_symptomatic_loss.png", width = 8, height = 5)
+
+
