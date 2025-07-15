@@ -36,8 +36,10 @@ p <- ggplot(nmb_by_policy, aes(x = vaccine_uptake, y = mean_nmb, color = policy_
   ) +
   theme_minimal(base_size = 13)
 
+# Show plot in RStudio Plots pane
+print(p)
+
 # Save
 ggsave("analysis/plots/plot_nmb_uptake_ci.png", plot = p, width = 10, height = 6)
 
-# Show plot in RStudio Plots pane
-print(p)
+
