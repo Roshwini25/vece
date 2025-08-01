@@ -17,8 +17,7 @@ analysis). A good overview on research compendiums, see the [R for
 Reproducible Research](https://annakrystalli.me/rrresearch/index.html)
 course.
 
-This repository collects, cleans and collates spatialtemporal covariates
-for antimalarial resistance modelling.
+This repository conducts analyses of vaccine impact evaluation. 
 
 ### Installation
 
