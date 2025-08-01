@@ -1,24 +1,17 @@
 #from Squire
-vsl_fn <- function(iso3c = "GBR", vsl_path = "analysis/data-derived/vsly.rds") {
-  uk_pop_df <- squire::get_population(iso3c = "GBR")   # Get UK population by age group
-  squire_params <- squire::parameters_explicit_SEEIR(country = "United Kingdom")  # Get parameters like IFR and hospitalisation rates
-  uk_pop_df$ifr <- squire_params$ifr  #  Add IFR
-  uk_pop_df$prob_hosp <- squire_params$prob_hosp  #  Add hospitalisation rate
+vsl_fn <- function(iso = "GBR", vsl_path = "analysis/data-derived/vsly.rds") {
 
-  vsly_df <- readRDS(vsl_path)
+  # read in and select the data we want
+  # simplified this here and just called life expectancy as le
+  vsly_df <- readRDS(vsl_path) %>%
+    filter(iso3c == iso) %>%
+    select(age_group,
+           n = Ng,
+           le = lg,
+           vsl,
+           vsly,
+           iso3c)
 
-  # Filter for UK only (iso3c == "GBR")
-  vsl_uk_value <- vsly_df[vsly_df$iso3c == iso3c, "vsl"]
-  vsly_uk_value <- vsly_df[vsly_df$iso3c == iso3c, "vsly"]
-  le_uk_value <- vsly_df[vsly_df$iso3c == iso3c, "lg"]
-  age_groups <- vsly_df[vsly_df$iso3c == iso3c, "age_group"]
-
-  df <- data.frame("age_group" = age_groups,
-                   "le" = le_uk_value,
-                   "vsl" = vsl_uk_value,
-                   "vsly" = vsly_uk_value,
-                   "iso3c" = iso3c)
-
-  return(df)
+  return(vsly_df)
 
 }
