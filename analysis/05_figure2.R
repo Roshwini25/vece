@@ -44,11 +44,11 @@ gg2 <- df %>%
   facet_grid(infection_rate ~ vaccine_uptake) +
   theme_bw(12) +
   theme(strip.text = element_text(size = 12)) +
-  MetBrewer::scale_fill_met_d(palette_name = "Pissaro", name = "Scenario", override_order = TRUE) +
+  MetBrewer::scale_fill_met_d(name = "Pissaro", override_order = TRUE, guide = guide_legend(title = "Scenario")) +
   labs(
     x = "\nVaccination Policy",
     y = "Cost / Loss (£ billions)\n"
   ) +
-  scale_y_sqrt(expand = expand_scale(mult = c(0, 0.05)), breaks = c(0.25,1,2,4,8, 16), limits = c(0,18))
+  scale_y_sqrt(expand = expansion(mult = c(0, 0.05)), breaks = c(0.25, 1, 2, 4, 8, 16), limits = c(0, 18))
 
 save_figs("figure2", gg2, 17, 8, font_family = "Helvetica")

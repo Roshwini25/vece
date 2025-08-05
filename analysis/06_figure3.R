@@ -1,6 +1,7 @@
 # Makes Figure 3
 
 library(tidyverse)
+library(ggrepel)
 devtools::load_all()
 
 # --- Load pre-computed policy results ---
@@ -30,3 +31,43 @@ df <- left_join(
   )
 
 ## TODO: Rosh to finish
+## === Step 3: Improved Figure 3 ===
+
+library(ggplot2)
+library(ggrepel)   # for label positioning
+
+fig3 <- ggplot(df, aes(x = policy_name, y = mean_nmb, color = factor(vaccine_uptake))) +
+  # CI error bars
+  geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.2,
+                position = position_dodge(width = 0.5)) +
+
+  # Mean NMB points
+  geom_point(size = 3, position = position_dodge(width = 0.5)) +
+
+  # Labels for mean NMB
+  geom_text_repel(aes(label = round(mean_nmb, 2)),
+                  position = position_dodge(width = 0.5),
+                  size = 3, show.legend = FALSE) +
+
+  # Horizontal breakeven line
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey40") +
+  annotate("text", x = 2, y = 0.1, label = "Breakeven (NMB = 0)", color = "grey40", size = 3) +
+
+  # Color palette
+  scale_color_manual(values = c("0.8" = "#D55E00", "0.9" = "#0072B2", "0.95" = "#009E73"),
+                     name = "Vaccine Uptake") +
+
+  # Labels and theme
+  labs(
+    title = "Figure 3: Net Monetary Benefit (NMB) by Policy",
+    subtitle = "Points = Mean NMB, Error Bars = 95% CI\nNMB is relative to a No Vaccination baseline",
+    x = "\nVaccination Policy",
+    y = "Net Monetary Benefit (£ billions)\n"
+  ) +
+  theme_bw(base_size = 14) +
+  theme(axis.text.x = element_text(angle = 15, hjust = 1))
+
+# --- Save ---
+ggsave("analysis/plots/figure3_nmb.png", fig3, width = 10, height = 6, dpi = 300)
+ggsave("analysis/plots/figure3_nmb.pdf", fig3, width = 10, height = 6)
+cat("✅ Figure 3 successfully saved as both PNG and PDF in analysis/plots/ \n")

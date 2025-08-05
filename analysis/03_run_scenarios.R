@@ -14,6 +14,7 @@ devtools::load_all()
 
 # read in ifrs
 ifr_tbl <- read.csv("analysis/data-derived/ifhr_table.csv")
+employment_tbl <- read.csv("analysis/data-derived/uk_employment_rate_2024.csv")
 
 # --- Step 1: Define scenario grid with best/central/worst cases ---
 scenario_grid <- expand.grid(
@@ -59,6 +60,9 @@ scenario_results_jcvi <- pmap_dfr(
 
     # --- Step 2: Create base UK population data ---
     uk_base <- create_country_data(iso3c = "GBR", ifr = params$ifr_ihrs$ifr_naive, ihr = params$ifr_ihrs$ihr_naive)
+    uk_base <- uk_base %>%
+      left_join(employment_tbl, by = "age_group") %>%
+      mutate(employment_rate = employment_rate_percent / 100)  # convert % to proportion
     uk_base$ve_hosp <- ve_hosp
     uk_base$ve_death <- ve_death
     uk_pop <- uk_base %>%
@@ -117,6 +121,9 @@ scenario_results_universal <- pmap_dfr(
 
     # --- Step 2: Create base UK population data ---
     uk_base <- create_country_data(iso3c = "GBR", ifr = params$ifr_ihrs$ifr_naive, ihr = params$ifr_ihrs$ihr_naive)
+    uk_base <- uk_base %>%
+      left_join(employment_tbl, by = "age_group") %>%
+      mutate(employment_rate = ifelse(is.na(employment_rate_percent), 0, employment_rate_percent / 100))  # convert % to proportion
     uk_base$ve_hosp <- ve_hosp
     uk_base$ve_death <- ve_death
     uk_pop <- uk_base %>%
@@ -173,6 +180,9 @@ scenario_results_adults <- pmap_dfr(
 
     # --- Step 2: Create base UK population data ---
     uk_base <- create_country_data(iso3c = "GBR", ifr = params$ifr_ihrs$ifr_naive, ihr = params$ifr_ihrs$ihr_naive)
+    uk_base <- uk_base %>%
+      left_join(employment_tbl, by = "age_group") %>%
+      mutate(employment_rate = employment_rate_percent / 100)  # convert % to proportion
     uk_base$ve_hosp <- ve_hosp
     uk_base$ve_death <- ve_death
     uk_pop <-  uk_base %>%
@@ -232,6 +242,9 @@ scenario_results_novaccine <- pmap_dfr(
 
     # --- Step 2: Create base UK population data ---
     uk_base <- create_country_data(iso3c = "GBR", ifr = params$ifr_ihrs$ifr_naive, ihr = params$ifr_ihrs$ihr_naive)
+    uk_base <- uk_base %>%
+      left_join(employment_tbl, by = "age_group") %>%
+      mutate(employment_rate = employment_rate_percent / 100)  # convert % to proportion
     uk_base$ve_hosp <- ve_hosp
     uk_base$ve_death <- ve_death
     uk_pop <-  uk_base %>%
