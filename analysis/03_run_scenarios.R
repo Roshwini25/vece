@@ -126,9 +126,10 @@ scenario_results_universal <- pmap_dfr(
       mutate(employment_rate = ifelse(is.na(employment_rate_percent), 0, employment_rate_percent / 100))  # convert % to proportion
     uk_base$ve_hosp <- ve_hosp
     uk_base$ve_death <- ve_death
-    uk_pop <- uk_base %>%
+    uk_pop <-  uk_base %>%
       mutate(vaccine_uptake = vaccine_uptake) %>%
-        ungroup()
+      mutate(vaccine_uptake = replace(vaccine_uptake, age_group %in% c("0-5", "5-10", "10-15", "15-20", "20-25", "25-30", "30-35", "35-40", "40-45", "45-50", "50-55", "55-60", "60-65"), 0)) %>%
+      ungroup()
 
     df_burden <- calculate_disease_burden(
       df = uk_pop,  # no filter, all age groups
@@ -145,7 +146,7 @@ scenario_results_universal <- pmap_dfr(
     # hospital_burden <- calculate_hospital_burden(df_burden$hospitalisations, params$los, params$cost_per_day)
 
     tibble(
-      policy_name = "Universal (All Ages)",
+      policy_name = "50+",
       vaccine_uptake,
       infection_rate,
       vaccine_efficacy,

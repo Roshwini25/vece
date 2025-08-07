@@ -10,7 +10,7 @@ scenario_results_all <- readRDS("analysis/data-derived/scenario_results_policies
 policy_summary <- scenario_results_all %>%
   mutate(across(matches("loss|cost"), ~ . / 1e9))  %>% # convert to £ billions
   group_by(policy_name, vaccine_uptake, infection_rate, vaccine_efficacy) %>%
-  summarise(total_loss = hospital_cost + vaccine_cost+symptomatic_loss + long_covid_loss + mortality_loss + informal_care_loss + hosp_prod_loss,
+  summarise(total_loss = hospital_cost +symptomatic_loss + long_covid_loss + mortality_loss + informal_care_loss + hosp_prod_loss,
             total_cost = vaccine_cost) %>%
   ungroup()
 
@@ -44,7 +44,7 @@ gg2 <- df %>%
   facet_grid(infection_rate ~ vaccine_uptake) +
   theme_bw(12) +
   theme(strip.text = element_text(size = 12)) +
-  MetBrewer::scale_fill_met_d(name = "Pissaro", override_order = TRUE, guide = guide_legend(title = "Scenario")) +
+  MetBrewer::scale_fill_met_d(palette_name = "Pissaro", override_order = TRUE, guide = guide_legend(title = "Scenario")) +
   labs(
     x = "\nVaccination Policy",
     y = "Cost / Loss (£ billions)\n"
