@@ -52,5 +52,6 @@ gg1 <- ggplot(loss_long, aes(x = fct_reorder(policy_name, vaccine_cost), y = los
   theme_bw(base_size = 13) +
   theme() +
   scale_y_sqrt(expand = expand_scale(mult = c(0, 0.05)), breaks = c(0.25,1,2,4,8, 16))
+gg1
 
 save_figs("figure1", gg1, 12)

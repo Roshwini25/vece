@@ -50,8 +50,7 @@ fig3 <- ggplot(df, aes(x = policy_name, y = mean_nmb, color = factor(vaccine_upt
                   size = 3, show.legend = FALSE) +
 
   # Horizontal breakeven line
-  geom_hline(yintercept = 0, linetype = "dashed", color = "grey40") +
-  annotate("text", x = 2, y = 0.1, label = "Breakeven (NMB = 0)", color = "grey40", size = 3) +
+  geomtextpath::geom_labelhline(yintercept = 0, linetype = "dashed", color = "grey40", label = "Breakeven (NMB = £0") +
 
   # Color palette
   scale_color_manual(values = c("0.8" = "#D55E00", "0.9" = "#0072B2", "0.95" = "#009E73"),
@@ -59,13 +58,12 @@ fig3 <- ggplot(df, aes(x = policy_name, y = mean_nmb, color = factor(vaccine_upt
 
   # Labels and theme
   labs(
-    title = "Figure 3: Net Monetary Benefit (NMB) by Policy",
-    subtitle = "Points = Mean NMB, Error Bars = 95% CI\nNMB is relative to a No Vaccination baseline",
     x = "\nVaccination Policy",
     y = "Net Monetary Benefit (£ billions)\n"
   ) +
   theme_bw(base_size = 14) +
   theme(axis.text.x = element_text(angle = 15, hjust = 1))
+fig3
 
 # --- Save ---
 ggsave("analysis/plots/figure3_nmb.png", fig3, width = 10, height = 6, dpi = 300)

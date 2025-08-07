@@ -32,7 +32,7 @@ df <- left_join(
     vaccine_efficacy,
     levels = c("Total Loss (Lower VE)", "Total Loss (Central VE)", "Total Loss (Upper VE)", "Total Vaccine Cost")
     )) %>%
-  mutate(policy_name = factor(policy_name, levels = c("JCVI Spring 2025 (75+ only)", "All Adults (18+)", "Universal (All Ages)"))) %>%
+  mutate(policy_name = factor(policy_name, levels = c("JCVI Spring 2025 (75+ only)", "Over 65s", "All Adults (18+)"))) %>%
   mutate(infection_rate = paste("Infection Rate = ", scales::percent(infection_rate))) %>%
   mutate(vaccine_uptake = paste("Vaccine Uptake = ", scales::percent(vaccine_uptake)))
 
