@@ -10,7 +10,7 @@ ifr_tbl <- read.csv("analysis/data-derived/ifhr_table.csv")
 employment_tbl <- read.csv("analysis/data-derived/uk_employment_rate_2024.csv")
 
 # --- Define VSLY scaling factors ---
-vsly_factors <- seq(0.1, 2, by = 0.1)  # from 0.1x to 2x VSLY
+vsly_factors <- exp(seq(-3, 0.5, 0.1))  # from 0.05x to 1.65x VSLY
 
 # --- Define scenario grid ---
 scenario_grid_vsly <- expand.grid(
@@ -38,11 +38,20 @@ params <- list(
 # --- Policy definitions ---
 policy_list <- list(
   list(name = "JCVI Spring 2025 (75+ only)",
-       filter = function(df, uptake) df %>% mutate(vaccine_uptake = replace(uptake, !(age_group %in% c("75-80", "80+")), 0))),
-  list(name = "Universal (All Ages)",
-       filter = function(df, uptake) df %>% mutate(vaccine_uptake = uptake)),
+       filter = function(df, uptake) {
+         df %>% mutate(vaccine_uptake = uptake) %>%
+         mutate(vaccine_uptake = replace(vaccine_uptake, !(age_group %in% c("75-80", "80+")), 0))
+         }),
+  list(name = "Over 65s",
+       filter = function(df, uptake) {
+         df %>% mutate(vaccine_uptake = uptake) %>%
+           mutate(vaccine_uptake = replace(vaccine_uptake, !(age_group %in% c("65-70","70-75","75-80", "80+")), 0))
+       }),
   list(name = "All Adults (18+)",
-       filter = function(df, uptake) df %>% mutate(vaccine_uptake = replace(uptake, age_group %in% c("0-5","5-10","10-15","15-20"), 0))),
+       filter = function(df, uptake) {
+         df %>% mutate(vaccine_uptake = uptake) %>%
+           mutate(vaccine_uptake = replace(vaccine_uptake, age_group %in% c("0-5","5-10","10-15","15-20"), 0))
+         }),
   list(name = "No Vaccination",
        filter = function(df, uptake) df %>% mutate(vaccine_uptake = 0))
 )
@@ -59,7 +68,7 @@ results_vsly <- pmap_dfr(
       uk_base <- create_country_data(iso3c = "GBR",
                                      ifr = params$ifr_ihrs$ifr_naive,
                                      ihr = params$ifr_ihrs$ihr_naive) %>%
-        left_join(employment_tbl, by = "age_group") %>%
+        mutate(employment_rate_percent = employment_tbl$employment_rate_percent) %>%
         mutate(employment_rate = employment_rate_percent / 100)
 
       uk_base$ve_hosp <- ve_hosp
@@ -81,8 +90,6 @@ results_vsly <- pmap_dfr(
       loss <- calculate_losses(df_burden, params)
       vax_cost <- calculate_vaccine_cost(df_burden$n, df_burden$vaccine_uptake, params$cost_vaccine_total)
 
-      nmb <- loss$total_loss - vax_cost
-
       tibble(
         policy_name = pol$name,
         vaccine_uptake,
@@ -97,7 +104,7 @@ results_vsly <- pmap_dfr(
         informal_care_loss = loss$informal_care_loss,
         hosp_prod_loss = loss$hosp_prod_loss,
         total_productivity_loss = loss$total_loss,
-        nmb = nmb
+        total_loss = loss$total_loss
       )
     })
   }
@@ -114,32 +121,35 @@ results_vsly <- readRDS("analysis/data-derived/scenario_results_vsly.rds")
 # --- Step 5: Calculate relative NMB (baseline = No Vaccination) ---
 baseline_vsly <- results_vsly %>%
   filter(policy_name == "No Vaccination") %>%
-  select(vaccine_uptake, vsly_factor, baseline_nmb = nmb)
+  select(vaccine_uptake, vsly_factor, no_vacc_loss = total_loss)
 
-df_vsly <- results_vsly %>%
+df_vsly <- results_vsly %>% filter(policy_name != "No Vaccination") %>%
   left_join(baseline_vsly, by = c("vaccine_uptake", "vsly_factor")) %>%
-  mutate(relative_nmb = nmb - baseline_nmb) %>%
+  mutate(nmb = (no_vacc_loss - total_loss) - vaccine_cost) %>%
   group_by(policy_name, vaccine_uptake, vsly_factor) %>%
-  summarise(mean_rel_nmb = mean(relative_nmb), .groups = "drop")
+  summarise(mean_rel_nmb = mean(nmb), .groups = "drop") %>%
+  mutate(vacuptext = paste0("Vaccine Uptake = ", scales::percent(vaccine_uptake)))
 
 # --- Step 6: Plot Figure 4 (relative NMB) ---
-fig4 <- ggplot(df_vsly, aes(x = vsly_factor, y = mean_rel_nmb, color = policy_name)) +
+fig4 <- ggplot(df_vsly, aes(x = vsly_factor, y = mean_rel_nmb/1e9, color = policy_name)) +
   geom_line(linewidth = 1) +
   geom_point(size = 1.5) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
-  facet_wrap(~ vaccine_uptake, labeller = label_both) +
+  geomtextpath::geom_textvline(xintercept = 20000/vsl_fn()$vsly[1], label = "Keeling et al. VSLY", inherit.aes = FALSE) +
+  facet_wrap(~ vacuptext) +
   labs(
-    title = "Figure 4: Sensitivity of Net Monetary Benefit (NMB) to VSLY Scaling",
-    subtitle = "NMB is relative to No Vaccination (baseline = 0)\nLines show policies; facets indicate vaccine uptake levels",
-    x = "\nVSLY Scaling Factor (0.1x – 2x)",
+    x = "\nVSLY Scaling Factor (0.05x – 1.5x)",
     y = "Net Monetary Benefit (£ billions, relative to No Vaccination)\n",
     color = "Vaccination Policy"
   ) +
   theme_bw(base_size = 14) +
-  theme(strip.text = element_text(size = 12))
+  theme(strip.text = element_text(size = 12)) +
+  scale_y_log10() +
+  scale_x_log10(breaks = c(0.05, 0.1, 0.2, 0.5, 1, 1.5))
+fig4
 
 # --- Save as PNG and PDF ---
-ggsave("analysis/plots/figure4_vsly.png", fig4, width = 10, height = 6, dpi = 300)
-ggsave("analysis/plots/figure4_vsly.pdf", fig4, width = 10, height = 6)
+ggsave("analysis/plots/figure4_vsly.png", fig4, width = 16, height = 6, dpi = 300)
+ggsave("analysis/plots/figure4_vsly.pdf", fig4, width = 16, height = 6)
 
 cat("✅ Figure 4 (VSLY sensitivity) saved to analysis/plots/figure4_vsly.[png/pdf]\n")
