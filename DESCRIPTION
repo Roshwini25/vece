@@ -1,6 +1,6 @@
 Package: vece
 Title: Vaccine Extension Cost Evaluation
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 
     c(person(given = "OJ",
              family = "Watson",
