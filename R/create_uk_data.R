@@ -1,6 +1,6 @@
 # R/create_UK_data.R
 create_country_data <- function(iso3c = "GBR",
-                           daily_wage = c(0, 0, 0, 18, 44, 88, 88, 110, 118, 118, 112, 112, 87, 0, 0, 0, 0),
+                           daily_wage = c(0, 0, 0, 18, 44, 88, 88, 110, 118, 118, 112, 112, 87, 87, 87, 87, 87),
                            ifr, ihr) {
 
   # --- Load population and Squire parameters ---
