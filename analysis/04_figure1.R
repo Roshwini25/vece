@@ -47,11 +47,11 @@ gg1 <- ggplot(loss_long, aes(x = fct_reorder(policy_name, vaccine_cost), y = los
   labs(
     x = "\nVaccination Policy",
     y = "Cost / Loss (£ billions)\n",
-    fill = "Cost / Loss Component"
+    fill = "Cost / Loss Component\n"
   ) +
-  theme_bw(base_size = 13) +
-  theme() +
+  theme_bw(base_size = 20) +
+  theme(legend.key.spacing.y = unit(0.5, "line")) +
   scale_y_sqrt(expand = expand_scale(mult = c(0, 0.05)), breaks = c(0.25,1,2,4,8, 16))
 gg1
 
-save_figs("figure1", gg1, 12)
+save_figs("figure1", gg1, 15, height = 8)

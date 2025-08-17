@@ -135,21 +135,21 @@ fig4 <- ggplot(df_vsly, aes(x = vsly_factor, y = mean_rel_nmb/1e9, color = polic
   geom_line(linewidth = 1) +
   geom_point(size = 1.5) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
-  geomtextpath::geom_textvline(xintercept = 20000/vsl_fn()$vsly[1], label = "Keeling et al. VSLY", inherit.aes = FALSE) +
+  geomtextpath::geom_textvline(xintercept = 20000/vsl_fn()$vsly[1], label = "Keeling et al. VSLY", inherit.aes = FALSE, size = 5, family = "Helvetica") +
   facet_wrap(~ vacuptext) +
   labs(
-    x = "\nVSLY Scaling Factor (0.05x – 1.5x)",
-    y = "Net Monetary Benefit (£ billions, relative to No Vaccination)\n",
+    x = "\nVSLY Scaling Factor",
+    y = "Net Monetary Benefit \n(£ billions, relative to No Vaccination)\n",
     color = "Vaccination Policy"
   ) +
-  theme_bw(base_size = 14) +
-  theme(strip.text = element_text(size = 12)) +
+  theme_bw(base_size = 16, base_family = "Helvetica") +
+  theme(strip.text = element_text(size = 16), legend.position = "top", axis.text.x = element_text(size = 11)) +
   scale_y_log10() +
-  scale_x_log10(breaks = c(0.05, 0.1, 0.2, 0.5, 1, 1.5))
+  scale_x_log10(breaks = c(0.05, 0.1, 0.2, 0.5, 1, 1.5), labels = scales::percent_format())
 fig4
 
 # --- Save as PNG and PDF ---
-ggsave("analysis/plots/figure4_vsly.png", fig4, width = 16, height = 6, dpi = 300)
+ggsave("analysis/plots/figure4_vsly.png", fig4, width = 14, height = 6.5, dpi = 300)
 ggsave("analysis/plots/figure4_vsly.pdf", fig4, width = 16, height = 6)
 
 cat("✅ Figure 4 (VSLY sensitivity) saved to analysis/plots/figure4_vsly.[png/pdf]\n")
